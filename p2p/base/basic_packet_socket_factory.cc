@@ -198,4 +198,45 @@ int BasicPacketSocketFactory::BindSocket(Socket* socket,
   return ret;
 }
 
+// Proxy support
+ProxyPacketSocketFactory::ProxyPacketSocketFactory(
+    SocketFactory* socket_factory, SocketAddress proxy_socket_address) :
+  basic_packet_socket_factory_(new BasicPacketSocketFactory(socket_factory))
+ {
+  proxy_info_.type = PROXY_HTTPS;
+  proxy_info_.address = proxy_socket_address;
+}
+
+ProxyPacketSocketFactory::~ProxyPacketSocketFactory() {}
+
+AsyncPacketSocket* ProxyPacketSocketFactory::CreateUdpSocket(
+    const SocketAddress& address,
+    uint16_t min_port,
+    uint16_t max_port) {
+  return basic_packet_socket_factory_->CreateUdpSocket(address, min_port, max_port);
+}
+
+AsyncListenSocket* ProxyPacketSocketFactory::CreateServerTcpSocket(const SocketAddress& local_address,
+                                        uint16_t min_port,
+                                        uint16_t max_port,
+                                        int opts) {
+  return basic_packet_socket_factory_->CreateServerTcpSocket(local_address, min_port, max_port, opts);
+}
+
+AsyncPacketSocket* ProxyPacketSocketFactory::CreateClientTcpSocket(
+    const SocketAddress& local_address,
+    const SocketAddress& remote_address,
+    const ProxyInfo& proxy_info,
+    const std::string& user_agent,
+    const PacketSocketTcpOptions& tcp_options) {
+  return basic_packet_socket_factory_->CreateClientTcpSocket(local_address, remote_address, proxy_info_, user_agent, tcp_options);
+}
+
+AsyncResolverInterface* ProxyPacketSocketFactory::CreateAsyncResolver() {
+ return basic_packet_socket_factory_->CreateAsyncResolver();
+}
+
+std::unique_ptr<webrtc::AsyncDnsResolverInterface> ProxyPacketSocketFactory::CreateAsyncDnsResolver() {
+  return basic_packet_socket_factory_->CreateAsyncDnsResolver();
+
 }  // namespace rtc

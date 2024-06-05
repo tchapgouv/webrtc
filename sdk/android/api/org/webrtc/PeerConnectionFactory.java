@@ -178,6 +178,9 @@ public class PeerConnectionFactory {
     @Nullable private NetworkControllerFactoryFactory networkControllerFactoryFactory;
     @Nullable private NetworkStatePredictorFactoryFactory networkStatePredictorFactoryFactory;
     @Nullable private NetEqFactoryFactory neteqFactoryFactory;
+    // Proxy support
+    @Nullable private String proxyAddress;
+    private int proxyPort;
 
     private Builder() {}
 
@@ -259,6 +262,13 @@ public class PeerConnectionFactory {
       return this;
     }
 
+    // Proxy support
+    public Builder setHttpsProxy(String proxyAddress, int proxyPort) {
+      this.proxyAddress = proxyAddress;
+      this.proxyPort = proxyPort;
+      return this;
+    }
+
     public PeerConnectionFactory createPeerConnectionFactory() {
       checkInitializeHasBeenCalled();
       if (audioDeviceModule == null) {
@@ -278,7 +288,9 @@ public class PeerConnectionFactory {
           networkStatePredictorFactoryFactory == null
               ? 0
               : networkStatePredictorFactoryFactory.createNativeNetworkStatePredictorFactory(),
-          neteqFactoryFactory == null ? 0 : neteqFactoryFactory.createNativeNetEqFactory());
+          neteqFactoryFactory == null ? 0 : neteqFactoryFactory.createNativeNetEqFactory(),
+          // Proxy support
+          proxyAddress, proxyPort);
     }
   }
 
@@ -607,7 +619,8 @@ public class PeerConnectionFactory {
       long audioDecoderFactory, VideoEncoderFactory encoderFactory,
       VideoDecoderFactory decoderFactory, long nativeAudioProcessor,
       long nativeFecControllerFactory, long nativeNetworkControllerFactory,
-      long nativeNetworkStatePredictorFactory, long neteqFactory);
+      long nativeNetworkStatePredictorFactory, long neteqFactory,
+      String proxyAddress, int proxyPort); // Proxy support
 
   private static native long nativeCreatePeerConnection(long factory,
       PeerConnection.RTCConfiguration rtcConfig, MediaConstraints constraints, long nativeObserver,

@@ -25,6 +25,10 @@
 #include "rtc_base/event_tracer.h"
 #include "rtc_base/physical_socket_server.h"
 #include "rtc_base/thread.h"
+// Proxy support
+#include "rtc_base/socket_address.h"
+#include "p2p/base/basic_packet_socket_factory.h"
+
 #include "sdk/android/generated_peerconnection_jni/PeerConnectionFactory_jni.h"
 #include "sdk/android/native_api/jni/java_types.h"
 #include "sdk/android/native_api/stacktrace/stacktrace.h"
@@ -238,7 +242,10 @@ ScopedJavaLocalRef<jobject> CreatePeerConnectionFactoryForJava(
         network_controller_factory,
     std::unique_ptr<NetworkStatePredictorFactoryInterface>
         network_state_predictor_factory,
-    std::unique_ptr<NetEqFactory> neteq_factory) {
+    std::unique_ptr<NetEqFactory> neteq_factory,
+    // Proxy support
+    std::string proxyAddress,
+    jint proxyPort) {
   // talk/ assumes pretty widely that the current Thread is ThreadManager'd, but
   // ThreadManager only WrapCurrentThread()s the thread where it is first
   // created.  Since the semantics around when auto-wrapping happens in
@@ -280,6 +287,10 @@ ScopedJavaLocalRef<jobject> CreatePeerConnectionFactoryForJava(
     dependencies.network_monitor_factory =
         std::make_unique<AndroidNetworkMonitorFactory>();
   }
+  // Proxy support
+  if (!proxyAddress.empty() && proxyPort != 0) {
+    dependencies.packet_socket_factory = std::make_unique<rtc::ProxyPacketSocketFactory>(socket_server.get(), rtc::SocketAddress(proxyAddress, proxyPort));
+  }
 
   dependencies.adm = std::move(audio_device_module);
   dependencies.audio_encoder_factory = std::move(audio_encoder_factory);
@@ -320,7 +331,9 @@ JNI_PeerConnectionFactory_CreatePeerConnectionFactory(
     jlong native_fec_controller_factory,
     jlong native_network_controller_factory,
     jlong native_network_state_predictor_factory,
-    jlong native_neteq_factory) {
+    jlong native_neteq_factory,
+    const JavaParamRef<jstring>& proxyAddress, // Proxy support
+    jint proxyPort) {
   rtc::scoped_refptr<AudioProcessing> audio_processor(
       reinterpret_cast<AudioProcessing*>(native_audio_processor));
   return CreatePeerConnectionFactoryForJava(
@@ -337,7 +350,10 @@ JNI_PeerConnectionFactory_CreatePeerConnectionFactory(
           native_network_controller_factory),
       TakeOwnershipOfUniquePtr<NetworkStatePredictorFactoryInterface>(
           native_network_state_predictor_factory),
-      TakeOwnershipOfUniquePtr<NetEqFactory>(native_neteq_factory));
+      TakeOwnershipOfUniquePtr<NetEqFactory>(native_neteq_factory),
+      // Proxy support
+      proxyAddress.is_null() ? "" : JavaToStdString(jni, proxyAddress),
+      proxyPort);
 }
 
 static void JNI_PeerConnectionFactory_FreeFactory(JNIEnv*, jlong j_p) {

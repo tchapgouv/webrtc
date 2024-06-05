@@ -60,6 +60,38 @@ class RTC_EXPORT BasicPacketSocketFactory : public PacketSocketFactory {
   SocketFactory* socket_factory_;
 };
 
+// Proxy support
+class RTC_EXPORT ProxyPacketSocketFactory : public PacketSocketFactory {
+ public:
+  explicit ProxyPacketSocketFactory(SocketFactory* socket_factory, SocketAddress proxy_socket_address);
+  ~ProxyPacketSocketFactory() override;
+
+  AsyncPacketSocket* CreateUdpSocket(const SocketAddress& local_address,
+                                     uint16_t min_port,
+                                     uint16_t max_port) override;
+  AsyncListenSocket* CreateServerTcpSocket(const SocketAddress& local_address,
+                                           uint16_t min_port,
+                                           uint16_t max_port,
+                                           int opts) override;
+  AsyncPacketSocket* CreateClientTcpSocket(
+      const SocketAddress& local_address,
+      const SocketAddress& remote_address,
+      const ProxyInfo& proxy_info,
+      const std::string& user_agent,
+      const PacketSocketTcpOptions& tcp_options) override;
+
+  // TODO(bugs.webrtc.org/12598) Remove when downstream stops using it.
+  ABSL_DEPRECATED("Use CreateAsyncDnsResolver")
+  AsyncResolverInterface* CreateAsyncResolver() override;
+
+  std::unique_ptr<webrtc::AsyncDnsResolverInterface> CreateAsyncDnsResolver()
+      override;
+
+ private:
+  BasicPacketSocketFactory* basic_packet_socket_factory_;
+  ProxyInfo proxy_info_;
+};
+
 }  // namespace rtc
 
 #endif  // P2P_BASE_BASIC_PACKET_SOCKET_FACTORY_H_
