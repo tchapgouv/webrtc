@@ -232,11 +232,9 @@ AsyncPacketSocket* ProxyPacketSocketFactory::CreateClientTcpSocket(
   return basic_packet_socket_factory_->CreateClientTcpSocket(local_address, remote_address, proxy_info_, user_agent, tcp_options);
 }
 
-AsyncResolverInterface* ProxyPacketSocketFactory::CreateAsyncResolver() {
- return basic_packet_socket_factory_->CreateAsyncResolver();
-}
-
-std::unique_ptr<webrtc::AsyncDnsResolverInterface> ProxyPacketSocketFactory::CreateAsyncDnsResolver() {
+std::unique_ptr<webrtc::AsyncDnsResolverInterface>
+ProxyPacketSocketFactory::CreateAsyncDnsResolver() {
   return basic_packet_socket_factory_->CreateAsyncDnsResolver();
+}
 
 }  // namespace rtc
