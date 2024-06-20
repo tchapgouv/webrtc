@@ -24,6 +24,10 @@ jobs:
       # Setup and Build
       - name: Setup and Build WebRTC for Android platform
         run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
           python ./tools/build-webrtc.py --setup --android ${{ env.VERSION }}
           python ./tools/build-webrtc.py --build --android ${{ env.VERSION }}
 
