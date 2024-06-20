@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ env.VERSION }}
-          path: ${{ env.VERSION }}/webrtc
+          path: ${{ env.VERSION }}/webrtc/android
       # Setup and Build
       - name: Setup and Build WebRTC for Android platform
         run: |
