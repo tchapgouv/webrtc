@@ -4,6 +4,9 @@ on:
   pull_request: { }
   workflow_dispatch:
 
+env:
+  VERSION: M124-proxy
+
 jobs:
   build:
     name: Android WebRTC Build
@@ -16,12 +19,12 @@ jobs:
       - name: Checkout WebRTC sources
         uses: actions/checkout@v4
         with:
-          ref: M124-proxy
-          path: M124-proxy
+          ref: ${{ env.VERSION }}
+          path: ${{ env.VERSION }}
       # Setup and Build
       - name: Setup and Build WebRTC for Android platform
         run: |
-          python ./tools/build-webrtc.py --setup --android target
-          python ./tools/build-webrtc.py --build --android target
+          python ./tools/build-webrtc.py --setup --android ${{ env.VERSION }}
+          python ./tools/build-webrtc.py --build --android ${{ env.VERSION }}
 
 
