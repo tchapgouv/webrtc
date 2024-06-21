@@ -2,7 +2,8 @@ name: Build WebRTC for Android
 
 on:
   pull_request: { }
-  workflow_dispatch:
+  push:
+    branches: [ master ]
 
 env:
   VERSION: M124-proxy
@@ -35,7 +36,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ env.VERSION }}
-          path: ${{ env.VERSION }}/webrtc/android
+          path: ${{ env.VERSION }}/build_webrtc/webrtc/android
       # Setup and Build
       - name: Setup and Build WebRTC for Android platform
         run: |
