@@ -1,0 +1,46 @@
+name: Build WebRTC for Android
+
+on:
+  pull_request: { }
+  push:
+    branches: [ master ]
+
+env:
+  VERSION: M124-proxy
+
+jobs:
+  build:
+    name: Android WebRTC Build
+    runs-on: ubuntu-latest
+    steps:
+      # Free Disk Space
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+          
+          # all of these default to true, but feel free to set to
+          # "false" if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+      # Setup environment
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Checkout WebRTC sources
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.VERSION }}
+          path: ${{ env.VERSION }}/build_webrtc/webrtc/android
+      # Setup and Build
+      - name: Setup and Build WebRTC for Android platform
+        run: |
+          python ./tools/build-webrtc.py --setup --android ${{ env.VERSION }}
+          python ./tools/build-webrtc.py --build --android ${{ env.VERSION }}
+
+
